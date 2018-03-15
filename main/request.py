@@ -9,15 +9,26 @@ class request_management:
         })
 
     def get_request(self, url, max_attempts, delay):
-        response = self.sess.get(url)
         while max_attempts > 0:
+            response = self.sess.get(url)
             if response.status_code == 200:
                 return(response)
             else:
                 print("Request Failed.")
                 print("Retrying...")
                 max_attempts = max_attempts - 1
-                print(max_attempts)
+                time.sleep(delay)
+        return(False)
+        
+    def post_request(self, url, payload, max_attempts, delay):
+        while max_attempts > 0:
+            response = self.sess.post(url,payload)
+            if response.status_code == 200:
+                return(response)
+            else:
+                print("POST Request failed....")
+                print("Retrying after "+delay+" seconds.")
+                max_attempts = max_attempts - 1
                 time.sleep(delay)
         return(False)
 
