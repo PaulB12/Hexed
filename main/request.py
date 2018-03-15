@@ -8,7 +8,7 @@ class request_management:
             "Referrer" : "http://legacy.hackerexperience.com"
         })
 
-    def get_request(self, url, max_attempts):
+    def get_request(self, url, max_attempts, delay):
         response = self.sess.get(url)
         while max_attempts > 0:
             if response.status_code == 200:
@@ -18,18 +18,20 @@ class request_management:
                 print("Retrying...")
                 max_attempts = max_attempts - 1
                 print(max_attempts)
-                time.sleep(3)
+                time.sleep(delay)
         return(False)
-    
-    def check_if_logged_in():
+
+    def check_if_logged_in(self):
         url = "http://legacy.hackerexperience.com"
-        
+        web_resp = self.get_request(url,10,3)
+        if(web_resp != False):
+            if "Hacker Experience is a browser-based hacking simulation game" in web_resp.text:
+                return(True)
+            else:
+                return(False)
+        else:
+            return(False)
+
 request = request_management()
 request.create_new_session()
-get_response = request.get_request("http://evocityinvestmentdevelopment.xyz/testting.php",3)
-print(get_response)
-if(get_response != False):
-    print(get_response.text)
-else:
-    print("Failed.")
-    
+print(request.check_if_logged_in())
