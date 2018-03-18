@@ -252,23 +252,29 @@ request.create_new_session()
 
 
 game = game_info(request)
-software, software_name, software_type, software_version, software_size, software_status, software_virus_own, software_is_installed_virus, folder = game.grab_software(1, 0)
-import_software = list()
-counter = 0
-for each in software_type:
-    if 'crc' in each:
-        import_software.append(software[counter])
-    counter = counter + 1
-print(folder[0])
-while True:
+def be_annoying_prick():
     software, software_name, software_type, software_version, software_size, software_status, software_virus_own, software_is_installed_virus, folder = game.grab_software(1, 0)
-    print(folder[-1])
-    payload = game.move_to_folder(import_software,folder[-1],1)
-    pool = ThreadPool(5)
-    pool.map(game.send_post_folder, payload)
-    pool.close()
-    pool.join()
-    time.sleep(1.5)
-    game.create_folder(folder[-1], 1)
-    game.return_to_root(import_software, 1)
-    game.delete_folder(folder[-1], 1)
+    import_software = list()
+    counter = 0
+    for each in software_type:
+        if 'crc' in each:
+            import_software.append(software[counter])
+        counter = counter + 1
+    print(folder[0])
+    while True:
+        software, software_name, software_type, software_version, software_size, software_status, software_virus_own, software_is_installed_virus, folder = game.grab_software(1, 0)
+        print(folder[-1])
+        payload = game.move_to_folder(import_software,folder[-1],1)
+        pool = ThreadPool(5)
+        pool.map(game.send_post_folder, payload)
+        pool.close()
+        pool.join()
+        time.sleep(1.5)
+        game.create_folder(folder[-1], 1)
+        game.return_to_root(import_software, 1)
+        game.delete_folder(folder[-1], 1)
+
+proc_id, time_left, proc_completed, proc_desc = game.fetch_active_process()
+for each in proc_id:
+    url = "https://legacy.hackerexperience.com/processes?del=1&pid"+str(each)
+    request.get_request(url, 3, 3, 0)
