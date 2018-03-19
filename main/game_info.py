@@ -2,6 +2,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import request_management
 import re
 import time
+from datetime import datetime
 from bs4 import BeautifulSoup
 class game_info:
     def __init__(self, request_starter):
@@ -243,6 +244,183 @@ class game_info:
             "id":0,
             }
         self.request.sess.post(url,payload)
+    def crack_ip(self, ip):
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print("Cracking "+ip+" @ "+current_time)
+        url = "https://legacy.hackerexperience.com/internet?action=hack&method=bf&ip="+ip
+        web_resp = self.request.get_request(url, 3, 5, 0)
+        if(web_resp != False):
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if "newbie protection" in web_resp.text:
+                print("Failed cracking "+ip+" | Newbie Protection @ "+current_time)
+                return(False)
+            elif "Access denied" in web_resp.text:
+                print("Failed cracking "+ip+" | Access Denied - Trying exploits @ "+current_time)
+                url = "https://legacy.hackerexperience.com/internet?action=hack&method=xp&ip="+ip
+                return(False)
+                exp_resp = self.request.get_request(url, 3, 5, 0)
+                if(exp_resp != False):
+                    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    if "Error!" in exp_resp.text:
+                        print("Failed exploiting "+ip+" | Software/Failure - All routes tried @ "+current_time)
+                        return(False)
+                    elif "Port scan" in exp_resp.text:
+                        print("Exploiting "+ip+" | Port scan queued @ "+current_time)
+                        return(False)
+                else:
+                    return(False)
+            elif "Crack server" in web_resp.text:
+                print("Cracking "+ip+" @ "+current_time)
+                return(True)
+            elif "hacked database" in web_resp.text:
+                print("Failed cracking "+ip+" | IP Already hacked @ "+current_time)
+                return(True)
+            elif "ip does not exist" in web_resp.text:
+                print("Failed cracking "+ip+" | IP doesn't exist @ "+current_time)
+                return(False)
+        else:
+            return(False)
+    def remote_hardware(self):
+        url = "https://legacy.hackerexperience.com/internet?view=software"
+        web_resp = self.request.get_request(url, 3, 5, 0)
+        if(web_resp != False):
+            if "HDD Usage" in web_resp.text:
+                soup = BeautifulSoup(web_resp.text, 'html.parser')
+                data = soup.find_all('span',{'class':'small'})
+                internet = data[1].find('strong').text.split(" ")
+                if internet[1].lower() == "gbit":
+                    internet = float(internet[0]) * 1000
+                else:
+                    internet = float(internet[0])
+                hardware_data = data[2].find_all('font')
+                space_used = hardware_data[0].text.split(" ")
+                max_space = hardware_data[1].text.split(" ")
+                if space_used[1].lower() == "mb":
+                    space_used = float(space_used[0])
+                else:
+                    space_used = float(space_used[0]) * 1000
+                if max_space[1].lower() == "mb":
+                    max_space = float(max_space[0])
+                else:
+                    max_space = float(max_space[0]) * 1000
+                return (internet, space_used, max_space)
+
+            else:
+                return(False, False, False)
+        else:
+            return(False, False, False)
+    def login_to_ip(self, ip):
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print("Attempting to log into "+ip+" @ "+current_time)
+        url = "https://legacy.hackerexperience.com/internet?ip="+ip+"&action=hack&method=bf"
+        web_resp = self.request.get_request(url, 3, 5, 0)
+        if(web_resp != False):
+            if "hacked database" in web_resp.text:
+                url = "https://legacy.hackerexperience.com/internet?action=login"
+                url_resp = self.request.get_request(url, 3, 5, 0)
+                if(url_resp != False):
+                    soup = BeautifulSoup(url_resp.text, 'html.parser')
+                    password = soup.find('input', {'name': 'pass'}).get('value')
+                    pass_url = 'https://legacy.hackerexperience.com/internet?action=login&user=root&pass='+password
+                    pass_resp = self.request.get_request(pass_url, 3, 5, 0)
+                    if(url_resp != False):
+                        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        print("Logged into "+ip+" @ "+current_time)
+                        return(True)
+                    else:
+                        return(False)
+                else:
+                    return(False)
+            else:
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print("Failed logging | IP "+ip+" | Not in Hacked Database @ "+current_time)
+        else:
+            return(False)
+    def find_best_virus(self, space, type):
+        ddos_id = list()
+        ddos_name = list()
+        ddos_version = list()
+        ddos_space = list()
+        vminer_id = list()
+        vminer_name = list()
+        vminer_version = list()
+        vminer_space = list()
+        software, software_name, software_type, software_version, software_size, software_status, software_virus_own, software_is_installed_virus, folder = self.grab_software(0, 1)
+        counter = 0
+        for each in software_type:
+            if each == "vddos":
+                if software_size[counter] <= space:
+                    ddos_id.append(software[counter])
+                    ddos_name.append(software_name[counter])
+                    ddos_version.append(software_version[counter])
+                    ddos_space.append(software_size[counter])
+            if each == "vminer":
+                if software_size[counter] <= space:
+                    vminer_id.append(software[counter])
+                    vminer_name.append(software_name[counter])
+                    vminer_version.append(software_version[counter])
+                    vminer_space.append(software_size[counter])
+            counter = counter + 1
+        if type == "vddos":
+            final_counter = 0
+            counter = 0
+            max = 0
+            if len(ddos_version) == 0:
+                return(False, False, False, False)
+            for each in ddos_version:
+                if float(each) > float(max):
+                    max=each
+                    final_counter = counter
+                counter = counter + 1
+            return(ddos_id[final_counter], ddos_name[final_counter], ddos_version[final_counter], ddos_space[final_counter])
+
+        elif type == "vminer":
+            final_counter = 0
+            counter = 0
+            max = 0
+            if len(vminer_version) == 0:
+                return(False, False, False, False)
+            for each in vminer_version:
+                if float(each) > float(max):
+                    max=each
+                    final_counter = counter
+                counter = counter + 1
+            return(vminer_id[final_counter], vminer_name[final_counter], vminer_version[final_counter], vminer_space[final_counter])
+    def upload_software(self, soft_id):
+        url = 'https://legacy.hackerexperience.com/internet?view=software&cmd=up&id='+str(soft_id)
+        resp = self.request.get_request(url, 3, 5, 0)
+        if resp != False:
+            return(True)
+        else:
+            return(False)
+    def internet_logout(self):
+        self.request.get_request("https://legacy.hackerexperience.com/internet?view=logout", 3, 5, 0)
+        return(True)
+    def fetch_active_uploads(self):
+        proc_id, time_left, proc_completed, proc_desc = (self.fetch_active_process())
+        proc_counter = 0
+        virus_uploaded_id = list()
+        virus_uploaded_name = list()
+        virus_uploaded_version = list()
+        virus_uploaded_ip = list()
+        virus_uploaded_completed = list()
+        virus_uploaded_timeleft = list()
+        for each in proc_desc:
+            if "Upload file" in each:
+                each = each.replace("Upload file ","")
+                name_data = each.split(" at ")
+                name_version = name_data[0].split("(")
+                name = name_version[0]
+                version = name_version[1].split(")")[0]
+                ip = name_data[1]
+                virus_uploaded_id.append(proc_id[proc_counter])
+                virus_uploaded_name.append(name)
+                virus_uploaded_version.append(version)
+                virus_uploaded_ip.append(ip)
+                virus_uploaded_completed.append(proc_completed[proc_counter])
+                virus_uploaded_timeleft.append(time_left[proc_counter])
+            proc_counter = proc_counter + 1
+        return(virus_uploaded_id, virus_uploaded_name, virus_uploaded_version, virus_uploaded_ip, virus_uploaded_completed, virus_uploaded_timeleft)
 request = request_management
 request = (request_management.requestManage())
 request.create_new_session()
@@ -274,7 +452,68 @@ def be_annoying_prick():
         game.return_to_root(import_software, 1)
         game.delete_folder(folder[-1], 1)
 
-proc_id, time_left, proc_completed, proc_desc = game.fetch_active_process()
-for each in proc_id:
-    url = "https://legacy.hackerexperience.com/processes?del=1&pid"+str(each)
-    request.get_request(url, 3, 3, 0)
+
+##proc_id, time_left, proc_completed, proc_desc = game.fetch_active_process()
+#game.crack_ip("55.125.191.40")
+#internet, space_used, max_space = (game.remote_hardware())
+#with open("iplist.txt","r") as file:
+    #data = file.readlines()
+#for each in data:
+#    each = each.replace("\n","")
+#    game.crack_ip(each)
+#proc_id, time_left, proc_completed, proc_desc = (game.fetch_active_process())
+#counter = -1
+#for each in proc_desc[::-1]:
+#    counter = counter + 1
+#    index = len((proc_desc))
+#    index = index - 1
+#    index = index - counter
+#    if "Crack server" in each:
+#        if "false" in proc_completed[index]:
+#            url = "https://legacy.hackerexperience.com/processes?pid="+str(proc_id[index])
+#            request.get_request(url, 3, 5, 0)
+#with open("iplist.txt","r") as file:
+#    data = file.readlines()
+#for each in data:
+#    each = each.replace("\n","")
+#    resp = game.login_to_ip(each)
+#    if resp:
+#        internet, space_used, max_space = (game.remote_hardware())
+#        space_left = max_space - space_used
+#        ddos_id, ddos_name, ddos_version, ddos_space =(game.find_best_virus(space_left, 'vddos'))
+#        print(ddos_id)
+#        if ddos_space != False:
+#            new_space_left = max_space - (space_used + ddos_space)
+#        else:
+#            new_space_left = space_left
+#        vminer_id, vminer_name, vminer_version, vminer_space = game.find_best_virus(new_space_left, 'vminer')
+#        print(vminer_id)
+#        if ddos_id != False:
+#            game.upload_software(ddos_id)
+#        if vminer_id != False:
+#            game.upload_software(ddos_id)
+#        game.internet_logout()
+proc_id, time_left, proc_completed, proc_desc = (game.fetch_active_process())
+proc_counter = 0
+virus_uploaded_id = list()
+virus_uploaded_name = list()
+virus_uploaded_version = list()
+virus_uploaded_ip = list()
+virus_uploaded_completed = list()
+virus_uploaded_timeleft = list()
+for each in proc_desc:
+    if "Upload file" in each:
+        each = each.replace("Upload file ","")
+        name_data = each.split(" at ")
+        name_version = name_data[0].split("(")
+        name = name_version[0]
+        version = name_version[1].split(")")[0]
+        ip = name_data[1]
+        virus_uploaded_id.append(proc_id[proc_counter])
+        virus_uploaded_name.append(name)
+        virus_uploaded_version.append(version)
+        virus_uploaded_ip.append(ip)
+        virus_uploaded_completed.append(proc_completed[proc_counter])
+        virus_uploaded_timeleft.append(time_left[proc_counter])
+    proc_counter = proc_counter + 1
+print(virus_uploaded_id)
