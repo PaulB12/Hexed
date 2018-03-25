@@ -490,6 +490,7 @@ class game_info:
             game.login_to_ip(ip)
             game.internet_logs()
             url = "https://legacy.hackerexperience.com/processes?pid="+virus_uploaded_id[soft_counter]
+            print(url)
             resp = self.request.get_request(url, 3, 5, 0)
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print("Virus Uploaded @ "+current_time)
@@ -595,26 +596,26 @@ def be_annoying_prick():
 #        if "false" in proc_completed[index]:
 #            url = "https://legacy.hackerexperience.com/processes?pid="+str(proc_id[index])
 #            request.get_request(url, 3, 5, 0)
-with open("old_iplist.txt","r") as file:
-    data = file.readlines()
-for each in data:
-    each = each.replace("\n","")
-    resp = game.login_to_ip(each)
-    if resp:
-        internet, space_used, max_space = (game.remote_hardware())
-        space_left = max_space - space_used
-        ddos_id, ddos_name, ddos_version, ddos_space =(game.find_best_virus(space_left, 'vddos'))
-        print(ddos_id)
-        if ddos_space != False:
-            new_space_left = max_space - (space_used + ddos_space)
-        else:
-            new_space_left = space_left
-        vminer_id, vminer_name, vminer_version, vminer_space = game.find_best_virus(new_space_left, 'vminer')
-        print(vminer_id)
-        if ddos_id != False:
-            game.upload_software(ddos_id)
-        if vminer_id != False:
-            game.upload_software(ddos_id)
-        game.internet_logout()
-#game.virus_upload_complete()
+#with open("old_iplist.txt","r") as file:#
+    #data = file.readlines()
+#for each in data:
+#    each = each.replace("\n","")
+#    resp = game.login_to_ip(each)
+#    if resp:
+#        internet, space_used, max_space = (game.remote_hardware())
+#        space_left = max_space - space_used
+#        ddos_id, ddos_name, ddos_version, ddos_space =(game.find_best_virus(space_left, 'vddos'))
+#        print(ddos_id)
+#        if ddos_space != False:
+#            new_space_left = max_space - (space_used + ddos_space)
+#        else:
+#            new_space_left = space_left
+#        vminer_id, vminer_name, vminer_version, vminer_space = game.find_best_virus(new_space_left, 'vminer')
+#        print(vminer_id)
+#        if ddos_id != False:
+#            game.upload_software(ddos_id)
+#        if vminer_id != False:
+#            game.upload_software(ddos_id)
+#        game.internet_logout()
+game.virus_upload_complete()
 #print(game.internet_logs())

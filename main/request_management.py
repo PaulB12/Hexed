@@ -11,7 +11,7 @@ class requestManage:
             "Referrer" : "http://legacy.hackerexperience.com"
         })
         self.sess.cookies.update({
-            'PHPSESSID':'te75e230ekqmucsnkil06ib1o1'
+            'PHPSESSID':'6j736taf0m3rietclnssq6sa36'
         })
 
         print("OK!")
