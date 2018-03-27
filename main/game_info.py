@@ -67,7 +67,7 @@ class game_info:
         else:
             return(False)
     def fetch_active_process_network(self):
-        url = "https://legacy.hackerexperience.com/processes?page=network"
+        url = "https://legacy.hackerexperience.com/processes"
         web_resp = self.request.get_request(url, 3, 5, 0)
         if(web_resp != False):
             if('<script type="text/javascript">' in web_resp.text):
@@ -80,17 +80,22 @@ class game_info:
                     if '*1000' in proc:
                         time_left.append(proc.split('*1000')[0])
                         data = proc.split('finish:iEnd,interval:100,id:')[1]
-                        #print(data)
                         proc_id.append(data.split(",")[0])
                         proc_completed.append(data.split("loaded:")[1].split("}")[0])
                 proc_html = BeautifulSoup(web_resp.text, 'html.parser')
+                counter = 0
                 for each in proc_id:
                     try:
                         pr_cl = "span4 processBlock"+str(each)
-                        print(pr_cl)
                         proc_desc.append(proc_html.find('div', {'class': pr_cl}).find('div',{'class':'proc-desc'}).text)
                     except:
+                        print("ERROR")
+                        print(pr_cl)
+                        proc_id.pop(counter)
+                        time_left.pop(counter)
+                        proc_completed.pop(counter)
                         pass
+                    counter = counter + 1
 
                 return(proc_id, time_left, proc_completed, proc_desc)
             else:
@@ -429,8 +434,10 @@ class game_info:
         self.request.get_request("https://legacy.hackerexperience.com/internet?view=logout", 3, 5, 0)
         return(True)
     def fetch_active_uploads(self):
-        proc_id, time_left, proc_completed, proc_desc = (self.fetch_active_process())
+        proc_id, time_left, proc_completed, proc_desc = (self.fetch_active_process_network())
         proc_counter = 0
+        print(len(proc_id))
+        print(len(proc_desc))
         virus_uploaded_id = list()
         virus_uploaded_name = list()
         virus_uploaded_version = list()
@@ -438,6 +445,7 @@ class game_info:
         virus_uploaded_completed = list()
         virus_uploaded_timeleft = list()
         for each in proc_desc:
+            print(each)
             if "Upload file" in each:
                 each = each.replace("Upload file ","")
                 name_data = each.split(" at ")
@@ -451,10 +459,18 @@ class game_info:
                 virus_uploaded_ip.append(ip)
                 virus_uploaded_completed.append(proc_completed[proc_counter])
                 virus_uploaded_timeleft.append(time_left[proc_counter])
+            else:
+                print("ERROR HERE ERROR HERE")
+                break
             proc_counter = proc_counter + 1
+        print("HERE")
+        print(proc_counter)
+        print("HERE")
+        print(len(virus_uploaded_id))
         return(virus_uploaded_id, virus_uploaded_name, virus_uploaded_version, virus_uploaded_ip, virus_uploaded_completed, virus_uploaded_timeleft)
     def virus_upload_complete(self):
         proc_id, time_left, proc_completed, proc_desc = (self.fetch_active_process_network())
+        print(len(proc_desc))
         proc_counter = 0
         virus_uploaded_id = list()
         virus_uploaded_name = list()
@@ -463,6 +479,7 @@ class game_info:
         virus_uploaded_completed = list()
         virus_uploaded_timeleft = list()
         for each in proc_desc:
+            print(each)
             if "Upload file" in each:
                 each = each.replace("Upload file ","")
                 name_data = each.split(" at ")
@@ -476,7 +493,10 @@ class game_info:
                 virus_uploaded_ip.append(ip)
                 virus_uploaded_completed.append(proc_completed[proc_counter])
                 virus_uploaded_timeleft.append(time_left[proc_counter])
+            else:
+                print("ERROR HERE")
             proc_counter = proc_counter + 1
+        print(proc_counter)
         soft_counter = 0
         virus_uploaded_id = virus_uploaded_id[::-1]
         virus_uploaded_name = virus_uploaded_name[::-1]
@@ -484,6 +504,7 @@ class game_info:
         virus_uploaded_ip = virus_uploaded_ip[::-1]
         virus_uploaded_completed = virus_uploaded_completed[::-1]
         virus_uploaded_timeleft = virus_uploaded_timeleft[::-1]
+        print(len(virus_uploaded_id))
         for ip in virus_uploaded_ip:
             if virus_uploaded_timeleft[soft_counter] != 0:
                 time.sleep(int(virus_uploaded_timeleft[soft_counter]))
@@ -507,6 +528,7 @@ class game_info:
                         self.request.get_request(url2, 3, 5, 0)
                         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         print("Virus installed | Logging out @ "+current_time)
+                        self.internet_logout()
                     sep_counter = sep_counter + 1
             soft_counter = soft_counter + 1
             self.internet_logout()
@@ -596,26 +618,26 @@ def be_annoying_prick():
 #        if "false" in proc_completed[index]:
 #            url = "https://legacy.hackerexperience.com/processes?pid="+str(proc_id[index])
 #            request.get_request(url, 3, 5, 0)
-#with open("old_iplist.txt","r") as file:#
-    #data = file.readlines()
+#with open("old_iplist.txt","r") as file:
+ #   data = file.readlines()
 #for each in data:
-#    each = each.replace("\n","")
-#    resp = game.login_to_ip(each)
-#    if resp:
-#        internet, space_used, max_space = (game.remote_hardware())
-#        space_left = max_space - space_used
-#        ddos_id, ddos_name, ddos_version, ddos_space =(game.find_best_virus(space_left, 'vddos'))
-#        print(ddos_id)
-#        if ddos_space != False:
-#            new_space_left = max_space - (space_used + ddos_space)
-#        else:
-#            new_space_left = space_left
-#        vminer_id, vminer_name, vminer_version, vminer_space = game.find_best_virus(new_space_left, 'vminer')
-#        print(vminer_id)
-#        if ddos_id != False:
-#            game.upload_software(ddos_id)
-#        if vminer_id != False:
-#            game.upload_software(ddos_id)
+   # each = each.replace("\n","")
+   # resp = game.login_to_ip(each)
+   # if resp:
+     #   internet, space_used, max_space = (game.remote_hardware())
+     #   space_left = max_space - space_used
+     #   ddos_id, ddos_name, ddos_version, ddos_space =(game.find_best_virus(space_left, 'vddos'))
+     #   print(ddos_id)
+     #   if ddos_space != False:
+     #       new_space_left = max_space - (space_used + ddos_space)
+     #   else:
+     #       new_space_left = space_left
+     #   vminer_id, vminer_name, vminer_version, vminer_space = game.find_best_virus(new_space_left, 'vminer')
+     #   print(vminer_id)
+    #    if ddos_id != False:
+   #         game.upload_software(ddos_id)
+  #      if vminer_id != False:
+ #           game.upload_software(ddos_id)
 #        game.internet_logout()
 game.virus_upload_complete()
 #print(game.internet_logs())
